@@ -132,50 +132,32 @@ const skills = [
 
 type Project = (typeof projects)[0]
 
-export default function Portfolio() {
-  const [selectedProject, setSelectedProject] = useState<Project | null>(projects[0])
-  const [currentImageIndex, setCurrentImageIndex] = useState(0)
-  const isMobile = useIsMobile()
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (selectedProject && selectedProject.images && selectedProject.images.length > 1) {
-        setCurrentImageIndex((prev) => (prev === selectedProject.images.length - 1 ? 0 : prev + 1))
-      }
-    }, 4000)
-
-    return () => clearInterval(interval)
-  }, [selectedProject])
-
-  useEffect(() => {
-    setCurrentImageIndex(0)
-  }, [selectedProject])
-
-  const ProjectDetails = ({ project }: { project: Project | null }) => {
-    if (!project) {
-      return (
-        <Card className="bg-gray-900/80 border-gray-800 shadow-xl flex items-center justify-center h-full">
-          <CardContent>
-            <p className="text-gray-400">Select a project to see the details.</p>
-          </CardContent>
-        </Card>
-      )
-    }
-
+const ProjectDetails = ({ project, currentImageIndex }: { project: Project | null; currentImageIndex: number }) => {
+  if (!project) {
     return (
-      <Card className="bg-gray-900/80 border-gray-800 shadow-xl">
-        <CardHeader>
-          <div className="flex justify-between items-start">
-            <div>
-              <CardTitle className="text-2xl text-white">{project.title}</CardTitle>
-              <CardDescription className="text-gray-400">{project.subtitle}</CardDescription>
-            </div>
-            <Badge variant="secondary" className="bg-blue-600 text-white">
-              {project.type}
-            </Badge>
+      <Card className="bg-gray-900/80 border-gray-800 shadow-xl flex items-center justify-center h-full min-h-96">
+        <CardContent className="pt-6">
+          <p className="text-gray-400">Select a project to see the details.</p>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  return (
+    <Card className="bg-gray-900/80 border-gray-800 shadow-xl">
+      <CardHeader>
+        <div className="flex justify-between items-start">
+          <div>
+            <CardTitle className="text-2xl text-white">{project.title}</CardTitle>
+            <CardDescription className="text-gray-400">{project.subtitle}</CardDescription>
           </div>
-        </CardHeader>
-        <CardContent>
+          <Badge variant="secondary" className="bg-blue-600 text-white">
+            {project.type}
+          </Badge>
+        </div>
+      </CardHeader>
+      <CardContent>
+        {project.images && project.images.length > 0 && (
           <div className="relative mb-4" style={{ paddingBottom: "56.25%" }}>
             <img
               src={project.images?.[currentImageIndex] || "https://via.placeholder.com/1280x720"}
@@ -183,46 +165,178 @@ export default function Portfolio() {
               className="absolute top-0 left-0 w-full h-full object-cover rounded-md transition-opacity duration-500"
             />
           </div>
-          <div>
-            <h4 className="font-semibold text-white mb-2">Description</h4>
-            <p className="text-gray-300 mb-4">{project.description}</p>
+        )}
+        <div>
+          <h4 className="font-semibold text-white mb-2">Description</h4>
+          <p className="text-gray-300 mb-4">{project.description}</p>
 
-            <h4 className="font-semibold text-white mb-2">Functionality</h4>
-            <p className="text-gray-300 mb-4">{project.functionality}</p>
+          <h4 className="font-semibold text-white mb-2">Functionality</h4>
+          <p className="text-gray-300 mb-4">{project.functionality}</p>
 
-            <h4 className="font-semibold text-white mb-2">Technologies</h4>
-            <div className="flex flex-wrap gap-2 mb-4">
-              {project.technologies.map((tech: string) => (
-                <Badge key={tech} variant="outline" className="border-gray-600 text-gray-300">
-                  {tech}
-                </Badge>
-              ))}
-            </div>
-
-            <div className="flex gap-4">
-              {project.link && (
-                <Button asChild className="bg-blue-600 hover:bg-blue-700">
-                  <a href={project.link} target="_blank" rel="noopener noreferrer">
-                    <ExternalLink className="w-4 h-4 mr-2" />
-                    View Project
-                  </a>
-                </Button>
-              )}
-              {project.github && (
-                <Button asChild variant="outline" className="border-gray-600 text-white hover:bg-gray-800">
-                  <a href={project.github} target="_blank" rel="noopener noreferrer">
-                    <Github className="w-4 h-4 mr-2" />
-                    GitHub
-                  </a>
-                </Button>
-              )}
-            </div>
+          <h4 className="font-semibold text-white mb-2">Technologies</h4>
+          <div className="flex flex-wrap gap-2 mb-4">
+            {project.technologies.map((tech: string) => (
+              <Badge key={tech} variant="outline" className="border-gray-600 text-gray-300">
+                {tech}
+              </Badge>
+            ))}
           </div>
-        </CardContent>
-      </Card>
+
+          <div className="flex gap-4">
+            {project.link && (
+              <Button asChild className="bg-blue-600 hover:bg-blue-700">
+                <a href={project.link} target="_blank" rel="noopener noreferrer">
+                  <ExternalLink className="w-4 h-4 mr-2" />
+                  View Project
+                </a>
+              </Button>
+            )}
+            {project.github && (
+              <Button asChild variant="outline" className="border-gray-600 text-white hover:bg-gray-800 bg-transparent">
+                <a href={project.github} target="_blank" rel="noopener noreferrer">
+                  <Github className="w-4 h-4 mr-2" />
+                  GitHub
+                </a>
+              </Button>
+            )}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+function ProjectsContent() {
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null)
+  const [currentImageIndex, setCurrentImageIndex] = useState(0)
+  const isMobile = useIsMobile()
+  const [hasMounted, setHasMounted] = useState(false)
+
+  useEffect(() => {
+    setHasMounted(true)
+  }, [])
+
+  useEffect(() => {
+    if (hasMounted) {
+      if (isMobile) {
+        setSelectedProject(null)
+      } else {
+        setSelectedProject(projects[0])
+      }
+    }
+  }, [isMobile, hasMounted])
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (selectedProject && selectedProject.images && selectedProject.images.length > 1) {
+        setCurrentImageIndex((prev) => (prev + 1) % (selectedProject.images?.length || 1))
+      }
+    }, 4000)
+    return () => clearInterval(interval)
+  }, [selectedProject])
+
+  useEffect(() => {
+    setCurrentImageIndex(0)
+  }, [selectedProject])
+
+  if (!hasMounted) {
+    return (
+      <div className="h-96 flex items-center justify-center">
+        <p className="text-gray-500">Loading projects...</p>
+      </div>
     )
   }
 
+  return isMobile ? (
+    <div className="space-y-4">
+      {projects.map((project) => (
+        <div key={project.id}>
+          <Card
+            onClick={() => setSelectedProject(selectedProject?.id === project.id ? null : project)}
+            className={`cursor-pointer transition-all duration-200 hover:shadow-md border-gray-800 ${
+              selectedProject?.id === project.id ? "ring-2 ring-blue-500 bg-gray-800" : "bg-gray-900 hover:bg-gray-800"
+            }`}
+          >
+            <CardContent className="p-4">
+              <div className="flex justify-between items-center">
+                <div>
+                  <p className="font-bold text-white">{project.title}</p>
+                  <p className="text-sm text-gray-400">{project.subtitle}</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge variant={project.status === "In Development" ? "secondary" : "default"}>
+                    {project.status}
+                  </Badge>
+                  {project.isPrivate && <Badge variant="outline">Private</Badge>}
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-2 mt-3">
+                {project.technologies.slice(0, 3).map((tech: string) => (
+                  <Badge key={tech} variant="outline" className="border-gray-700 text-gray-300">
+                    {tech}
+                  </Badge>
+                ))}
+                {project.technologies.length > 3 && (
+                  <Badge variant="outline" className="border-gray-700 text-gray-300">
+                    +{project.technologies.length - 3}
+                  </Badge>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+          {selectedProject?.id === project.id && (
+            <div className="mt-4">
+              <ProjectDetails project={selectedProject} currentImageIndex={currentImageIndex} />
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  ) : (
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="lg:col-span-1 flex flex-col justify-between gap-4">
+        {projects.map((project) => (
+          <Card
+            key={project.id}
+            onClick={() => setSelectedProject(project)}
+            className={`cursor-pointer transition-all duration-200 hover:shadow-md border-gray-800 ${
+              selectedProject?.id === project.id ? "ring-2 ring-blue-500 bg-gray-800" : "bg-gray-900 hover:bg-gray-800"
+            }`}
+          >
+            <CardContent className="p-4">
+              <div className="flex justify-between items-start">
+                <div className="flex-1">
+                  <p className="font-bold text-white">{project.title}</p>
+                  <p className="text-sm text-gray-400">{project.subtitle}</p>
+                </div>
+                <div className="flex flex-col items-end gap-2 ml-2">
+                  <Badge variant={project.status === "In Development" ? "secondary" : "default"}>
+                    {project.status}
+                  </Badge>
+                  {project.isPrivate && <Badge variant="outline">Private</Badge>}
+                </div>
+              </div>
+
+              <div className="flex flex-wrap gap-2 mt-3">
+                {project.technologies.map((tech: string) => (
+                  <Badge key={tech} variant="outline" className="border-gray-700 text-gray-300">
+                    {tech}
+                  </Badge>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      <div className="lg:col-span-2">
+        <ProjectDetails project={selectedProject} currentImageIndex={currentImageIndex} />
+      </div>
+    </div>
+  )
+}
+
+export default function Portfolio() {
   return (
     <div className="min-h-screen bg-black">
       {/* Header */}
@@ -445,100 +559,7 @@ export default function Portfolio() {
             <h3 className="text-3xl font-bold text-white mb-2">Featured Projects</h3>
             <p className="text-gray-400">Click on a project to see the details.</p>
           </div>
-
-          {isMobile ? (
-            // Mobile View: Accordion Style
-            <div className="space-y-4">
-              {projects.map((project) => (
-                <div key={project.id}>
-                  <Card
-                    onClick={() => setSelectedProject(selectedProject?.id === project.id ? null : project)}
-                    className={`cursor-pointer transition-all duration-200 hover:shadow-md border-gray-800 ${
-                      selectedProject?.id === project.id
-                        ? "ring-2 ring-blue-500 bg-gray-800"
-                        : "bg-gray-900 hover:bg-gray-800"
-                    }`}
-                  >
-                    <CardContent className="p-4">
-                      <div className="flex justify-between items-center">
-                        <div>
-                          <p className="font-bold text-white">{project.title}</p>
-                          <p className="text-sm text-gray-400">{project.subtitle}</p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Badge variant={project.status === "In Development" ? "secondary" : "default"}>
-                            {project.status}
-                          </Badge>
-                          {project.isPrivate && <Badge variant="outline">Private</Badge>}
-                        </div>
-                      </div>
-                      <div className="flex flex-wrap gap-2 mt-3">
-                        {project.technologies.slice(0, 3).map((tech: string) => (
-                          <Badge key={tech} variant="outline" className="border-gray-700 text-gray-300">
-                            {tech}
-                          </Badge>
-                        ))}
-                        {project.technologies.length > 3 && (
-                          <Badge variant="outline" className="border-gray-700 text-gray-300">
-                            +{project.technologies.length - 3}
-                          </Badge>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                  {selectedProject?.id === project.id && (
-                    <div className="mt-4">
-                      <ProjectDetails project={selectedProject} />
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          ) : (
-            // Desktop View: Grid Style
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              <div className="lg:col-span-1 flex flex-col justify-between">
-                {projects.map((project) => (
-                  <Card
-                    key={project.id}
-                    onClick={() => setSelectedProject(project)}
-                    className={`cursor-pointer transition-all duration-200 hover:shadow-md border-gray-800 ${
-                      selectedProject?.id === project.id
-                        ? "ring-2 ring-blue-500 bg-gray-800"
-                        : "bg-gray-900 hover:bg-gray-800"
-                    }`}
-                  >
-                    <CardContent className="p-4">
-                      <div className="flex justify-between items-start">
-                        <div className="flex-1">
-                          <p className="font-bold text-white">{project.title}</p>
-                          <p className="text-sm text-gray-400">{project.subtitle}</p>
-                        </div>
-                        <div className="flex flex-col items-end gap-2 ml-2">
-                          <Badge variant={project.status === "In Development" ? "secondary" : "default"}>
-                            {project.status}
-                          </Badge>
-                          {project.isPrivate && <Badge variant="outline">Private</Badge>}
-                        </div>
-                      </div>
-
-                      <div className="flex flex-wrap gap-2 mt-3">
-                        {project.technologies.map((tech: string) => (
-                          <Badge key={tech} variant="outline" className="border-gray-700 text-gray-300">
-                            {tech}
-                          </Badge>
-                        ))}
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-
-              <div className="lg:col-span-2">
-                <ProjectDetails project={selectedProject} />
-              </div>
-            </div>
-          )}
+          <ProjectsContent />
         </section>
 
         {/* Contact Section */}
