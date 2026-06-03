@@ -28,3 +28,6 @@ pnpm-debug.log*
 # next.js
 /out/
 /.next/
+
+# local assets (copied to public/ on build)
+/assets/
