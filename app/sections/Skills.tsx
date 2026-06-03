@@ -10,8 +10,8 @@ export default function Skills() {
       <h3 className="text-2xl font-bold text-white mb-8 text-center">Technology Stack</h3>
       <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
         {skillCategories.map((cat) => (
-          <Card key={cat.category} className="bg-gray-900 border-gray-800">
-            <CardContent className="p-6">
+          <Card key={cat.category} className="bg-gray-900 border-gray-800 h-full">
+            <CardContent className="p-6 h-full flex flex-col">
               <h4 className="font-semibold text-white mb-3">{cat.category}</h4>
               <div className="flex flex-wrap gap-2">
                 {cat.items.map((item) => (

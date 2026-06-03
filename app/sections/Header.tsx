@@ -10,7 +10,7 @@ export default function Header() {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div className="flex items-center gap-4">
             <Image
-              src="https://res.cloudinary.com/djc3smoxw/image/upload/v1752117069/1733256468717_emkw6h.jpg"
+              src="/profile.jpg"
               alt="João Roberto Alvares Ewerton"
               width={64}
               height={64}
